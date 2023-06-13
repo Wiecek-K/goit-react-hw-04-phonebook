@@ -4,9 +4,7 @@ interface ContactFormProps {
   onInputChange(event: React.ChangeEvent<HTMLInputElement>): void;
   onSubmit(e: React.FormEvent<HTMLFormElement>): void;
 }
-// const handleSubmit=(e: React.FormEvent<HTMLFormElement>)=>{
 
-// }
 export const ContactForm = ({ onSubmit, onInputChange }: ContactFormProps) => (
   <form className={css.contactForm} onSubmit={onSubmit}>
     <label>
