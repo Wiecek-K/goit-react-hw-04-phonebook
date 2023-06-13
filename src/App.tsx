@@ -1,35 +1,86 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import { nanoid } from "nanoid";
+
+import { Filter } from "./components/Filter";
+import { ContactForm } from "./components/ContactForm";
+import { ContactList } from "./components/ContactList";
+
+import type { ContactI, FormData } from "./types/Type";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [contacts, setContacts] = useState<ContactI[]>([]);
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    number: "",
+  });
+  const [filter, setFilter] = useState("");
+
+  useEffect(() => {
+    const contactsData = localStorage.getItem("contacts");
+    console.log(contactsData);
+    if (contactsData?.length) {
+      const parseContacts: ContactI[] = JSON.parse(contactsData);
+      if (parseContacts) {
+        setContacts(parseContacts);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+  }, [contacts]);
+
+  const handleFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (evt: React.FormEvent<HTMLFormElement>) => {
+    evt.preventDefault();
+    const isContactExist = contacts.some(
+      (contact) => contact.name === formData.name
+    );
+    if (isContactExist) {
+      alert(`${formData.name} is already in contacts`);
+    } else {
+      setContacts((prevState) => [
+        ...prevState,
+        {
+          id: nanoid(),
+          name: formData.name,
+          number: formData.number,
+        },
+      ]);
+      setFormData({ name: "", number: "" });
+    }
+  };
+  const filterContacts = () =>
+    contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(filter.toLowerCase())
+    );
+  const deleteContact = (id: string) => {
+    setContacts((prevState) => prevState.filter((obj) => obj.id !== id));
+  };
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilter(e.target.value);
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Phonebook</h1>
+      <ContactForm onSubmit={handleSubmit} onInputChange={handleFormChange} />
+      <h3>Contacts</h3>
+      <Filter onInputChange={handleFilterChange} />
+      <ContactList
+        contacts={!filter ? contacts : filterContacts()}
+        onDeleteContact={deleteContact}
+      />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
