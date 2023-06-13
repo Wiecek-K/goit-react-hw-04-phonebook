@@ -57,6 +57,7 @@ function App() {
       ]);
       setFormData({ name: "", number: "" });
     }
+    evt.currentTarget.reset();
   };
   const filterContacts = () =>
     contacts.filter((contact) =>
